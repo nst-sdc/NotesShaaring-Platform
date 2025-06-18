@@ -28,10 +28,13 @@ export default function Login() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-500 to-pink-700">
-      <div className="bg-white p-8 rounded-3xl  w-full max-w-md">
+      <div className="bg-white p-8 rounded-3xl w-full max-w-md shadow-xl">
         <div className="flex justify-center mb-6">
-          <div className="w-16 h-16 rounded-xl flex items-center justify-center"
-            style={{ background: 'linear-gradient(135deg, #667EEA 0%, #764BA2 100%)' }}
+          <div
+            className="w-16 h-16 rounded-xl flex items-center justify-center"
+            style={{
+              background: 'linear-gradient(135deg, #667EEA 0%, #764BA2 100%)',
+            }}
           >
             <svg
               className="w-10 h-10 text-white"
@@ -43,13 +46,13 @@ export default function Login() {
           </div>
         </div>
         <h2 className="text-2xl font-bold text-center text-gray-800 mb-2">
-          Welcome 
+          Welcome
         </h2>
         <p className="text-sm text-center text-gray-500 mb-6">
           Login in to access your notes
         </p>
 
-        <form onSubmit={handleSubmit} className="space-y-4 ">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">
               Email
@@ -62,6 +65,7 @@ export default function Login() {
               onChange={(e) => setEmail(e.target.value)}
             />
           </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700">
               Password
@@ -69,7 +73,7 @@ export default function Login() {
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}
-                className="w-full mt-1 p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full mt-1 p-3 border rounded-xl pr-10 focus:outline-none focus:ring-2 focus:ring-indigo-500 border-gray-300"
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -77,31 +81,26 @@ export default function Login() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-3 flex items-center text-gray-500"
+                className="absolute right-3 top-3 text-gray-500 focus:outline-none"
               >
-                {showPassword ? 'close' : 'open'}
+                {showPassword ? 'Close' : 'Open'}
               </button>
             </div>
           </div>
 
-          {error && (
-            <p className="text-red-500 text-sm">{error}</p>
-          )}
+          <p
+            className={`text-sm pl-1 min-h-[20px] transition-all duration-300 ${
+              error ? 'text-red-500 opacity-100' : 'opacity-0'
+            }`}
+          >
+            {error || ' '}
+          </p>
 
           <button
             type="submit"
-            className="w-full py-3 text-white font-semibold rounded-xl transition-all duration-300"
-            style={{
-              background: 'linear-gradient(135deg, #667EEA 0%, #764BA2 100%)',
-            }}
-            onMouseOver={(e) =>
-              (e.currentTarget.style.background = '#5A67D8')
-            }
-            onMouseOut={(e) =>
-              (e.currentTarget.style.background = 'linear-gradient(135deg, #667EEA 0%, #764BA2 100%)')
-            }
+            className="w-full py-3 text-white font-semibold rounded-xl transition duration-300 bg-gradient-to-br from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-indigo-600"
           >
-             LOGIN
+            LOGIN
           </button>
         </form>
 

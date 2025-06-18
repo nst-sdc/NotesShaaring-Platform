@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
-import './SignUp.css';
 
-const SignUp = () => {
+export default function SignUp() {
   const [formData, setFormData] = useState({
     username: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
   });
 
   const [showPassword, setShowPassword] = useState(false);
@@ -15,153 +14,205 @@ const SignUp = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prevState => ({
-      ...prevState,
-      [name]: value
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
     }));
-    
-    // Clear error when user starts typing
+
     if (errors[name]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [name]: ''
+        [name]: '',
       }));
     }
   };
 
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!formData.username.trim()) {
       newErrors.username = 'Username is required';
     } else if (formData.username.length < 3) {
       newErrors.username = 'Username must be at least 3 characters';
     }
-    
+
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Please enter a valid email';
     }
-    
+
     if (!formData.password) {
       newErrors.password = 'Password is required';
     } else if (formData.password.length < 6) {
       newErrors.password = 'Password must be at least 6 characters';
     }
-    
+
     if (!formData.confirmPassword) {
       newErrors.confirmPassword = 'Please confirm your password';
     } else if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';
     }
-    
+
     return newErrors;
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const newErrors = validateForm();
-    
-    if (Object.keys(newErrors).length === 0) {
-      // Add your signup logic here
+    const validationErrors = validateForm();
+
+    if (Object.keys(validationErrors).length === 0) {
       console.log('Form submitted:', formData);
+      setFormData({
+        username: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
+      });
     } else {
-      setErrors(newErrors);
+      setErrors(validationErrors);
     }
   };
 
   return (
-    <div className="signup-container">
-      <div className="signup-card">
-        <div className="signup-avatar">
-          <div className="signup-avatar-icon">
-            <svg width="48" height="48" fill="none" viewBox="0 0 24 24">
-              <rect width="48" height="48" rx="12" fill="url(#avatar-gradient)"/>
-              <g>
-                <path fill="#fff" d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/>
-              </g>
-              <defs>
-                <linearGradient id="avatar-gradient" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
-                  <stop stopColor="#8e6df5"/>
-                  <stop offset="1" stopColor="#c054eb"/>
-                </linearGradient>
-              </defs>
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-500 to-pink-700">
+      <div className="bg-white p-8 rounded-3xl w-full max-w-md shadow-xl">
+        <div className="flex justify-center mb-6">
+          <div
+            className="w-16 h-16 rounded-xl flex items-center justify-center"
+            style={{
+              background: 'linear-gradient(135deg, #667EEA 0%, #764BA2 100%)',
+            }}
+          >
+            <svg
+              className="w-10 h-10 text-white"
+              fill="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z" />
             </svg>
           </div>
         </div>
-        <h2 className="signup-title">Create Your Account</h2>
-        <p className="signup-subtitle">Join us and start sharing your notes today</p>
-        <form onSubmit={handleSubmit} className="signup-form">
-          <div className="form-group">
-            <label htmlFor="username" className="signup-label">Username</label>
+
+        <h2 className="text-2xl font-bold text-center text-gray-800 mb-2">
+          Create Your Account
+        </h2>
+        <p className="text-sm text-center text-gray-500 mb-6">
+          Join us and start sharing your notes today
+        </p>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Username
+            </label>
             <input
               type="text"
-              id="username"
               name="username"
               placeholder="Enter your username"
               value={formData.username}
               onChange={handleChange}
-              className={errors.username ? 'error' : ''}
-              autoComplete="username"
+              className={`w-full mt-1 p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                errors.username ? 'border-red-500' : 'border-gray-300'
+              }`}
             />
-            {errors.username && <span className="error-message">{errors.username}</span>}
+            {errors.username && (
+              <p className="text-sm text-red-500 mt-1">{errors.username}</p>
+            )}
           </div>
-          <div className="form-group">
-            <label htmlFor="email" className="signup-label">Email</label>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Email
+            </label>
             <input
               type="email"
-              id="email"
               name="email"
               placeholder="Enter your email"
               value={formData.email}
               onChange={handleChange}
-              className={errors.email ? 'error' : ''}
-              autoComplete="email"
+              className={`w-full mt-1 p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                errors.email ? 'border-red-500' : 'border-gray-300'
+              }`}
             />
-            {errors.email && <span className="error-message">{errors.email}</span>}
+            {errors.email && (
+              <p className="text-sm text-red-500 mt-1">{errors.email}</p>
+            )}
           </div>
-          <div className="form-group">
-            <label htmlFor="password" className="signup-label">Password</label>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Password
+            </label>
             <div className="relative">
               <input
-                type="password"
-                id="password"
+                type={showPassword ? 'text' : 'password'}
                 name="password"
                 placeholder="Enter your password"
                 value={formData.password}
                 onChange={handleChange}
-                className={errors.password ? 'error' : ''}
-                autoComplete="new-password"
+                className={`w-full mt-1 p-3 border rounded-xl pr-10 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                  errors.password ? 'border-red-500' : 'border-gray-300'
+                }`}
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-3 text-gray-500 focus:outline-none"
+              >
+                {showPassword ? 'Close' : 'Open'}
+              </button>
             </div>
-            {errors.password && <span className="error-message">{errors.password}</span>}
+            {errors.password && (
+              <p className="text-sm text-red-500 mt-1">{errors.password}</p>
+            )}
           </div>
-          <div className="form-group">
-            <label htmlFor="confirmPassword" className="signup-label">Confirm Password</label>
+
+       
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Confirm Password
+            </label>
             <div className="relative">
               <input
-                type="password"
-                id="confirmPassword"
+                type={showConfirmPassword ? 'text' : 'password'}
                 name="confirmPassword"
                 placeholder="Confirm your password"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                className={errors.confirmPassword ? 'error' : ''}
-                autoComplete="new-password"
+                className={`w-full mt-1 p-3 border rounded-xl pr-10 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                  errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
+                }`}
               />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-3 top-3 text-gray-500 focus:outline-none"
+              >
+                {showConfirmPassword ? 'Close' : 'Open'}
+              </button>
             </div>
-            {errors.confirmPassword && <span className="error-message">{errors.confirmPassword}</span>}
+            {errors.confirmPassword && (
+              <p className="text-sm text-red-500 mt-1">
+                {errors.confirmPassword}
+              </p>
+            )}
           </div>
-          <button type="submit" className="signup-gradient-btn">Create Account</button>
+
+   
+          <button
+            type="submit"
+            className="w-full py-3 text-white font-semibold rounded-xl transition duration-300 bg-gradient-to-br from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-indigo-600"
+          >
+            Create Account
+          </button>
         </form>
-        <p className="signup-link">
+
+        <p className="text-sm text-center text-gray-500 mt-6">
           Already have an account?{' '}
-          <a href="/login">Log in</a>
+          <a href="/login" className="text-indigo-600 hover:underline">
+            Log in
+          </a>
         </p>
       </div>
     </div>
   );
-};
-
-export default SignUp;
+}
