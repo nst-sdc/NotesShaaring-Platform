@@ -12,6 +12,7 @@ export default function SignUp() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState({});
+  const [submissionError, setSubmissionError] = useState('');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -25,6 +26,9 @@ export default function SignUp() {
         ...prev,
         [name]: '',
       }));
+    }
+    if (submissionError) {
+      setSubmissionError('');
     }
   };
 
@@ -58,20 +62,44 @@ export default function SignUp() {
     return newErrors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const validationErrors = validateForm();
 
-    if (Object.keys(validationErrors).length === 0) {
-      console.log('Form submitted:', formData);
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:3000/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: formData.username,
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Something went wrong');
+      }
+
+      console.log('Form submitted:', data);
+      // TODO: Handle successful registration (e.g., save token, redirect)
       setFormData({
         username: '',
         email: '',
         password: '',
         confirmPassword: '',
       });
-    } else {
-      setErrors(validationErrors);
+    } catch (error) {
+      setSubmissionError(error.message);
     }
   };
 
@@ -106,6 +134,13 @@ export default function SignUp() {
         <p className="text-sm text-center text-gray-500 mb-6">
           Join us and start sharing your notes today
         </p>
+
+        {submissionError && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl relative" role="alert">
+            <strong className="font-bold">Error:</strong>
+            <span className="block sm:inline"> {submissionError}</span>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
