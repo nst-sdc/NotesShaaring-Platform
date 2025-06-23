@@ -66,7 +66,48 @@ export default function SignUp() {
     e.preventDefault();
     const validationErrors = validateForm();
 
+<<<<<<< Updated upstream
     if (Object.keys(validationErrors).length > 0) {
+=======
+    if (Object.keys(validationErrors).length === 0) {
+      try {
+        const response = await axios.post(
+          'http://localhost:3000/api/signup', // Updated to use local backend
+          {
+            username: formData.username,
+            email: formData.email,
+            password: formData.password,
+          }
+        );
+
+        const { token, message } = response.data;
+
+        // Store token in localStorage
+        localStorage.setItem('token', token);
+        
+        // Show success message
+        alert(message || 'Account created successfully!');
+        
+        // Navigate to browse page
+        navigate('/browse');
+      } catch (error) {
+        console.error('Signup error:', error);
+        
+        // Handle specific error messages from backend
+        if (error.response?.data?.message) {
+          alert(error.response.data.message);
+        } else if (error.response?.status === 400) {
+          alert('Invalid data provided. Please check your input.');
+        } else if (error.response?.status === 500) {
+          alert('Server error. Please try again later.');
+        } else if (error.code === 'ERR_NETWORK') {
+          alert('Network error. Please check your connection and try again.');
+        } else {
+          alert('Signup failed. Please try again.');
+        }
+      }
+    } else {
+>>>>>>> Stashed changes
       setErrors(validationErrors);
       return;
     }
