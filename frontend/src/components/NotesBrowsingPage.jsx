@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import Navbar from "./Navbar";
 import {
   FaDownload,
   FaEye,
@@ -8,6 +7,7 @@ import {
   FaUser,
   FaBookOpen,
   FaFilePdf,
+  FaTrashAlt,
 } from "react-icons/fa";
 
 const NotesBrowsingPage = () => {
@@ -17,6 +17,8 @@ const NotesBrowsingPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("All Subjects");
   const [sortBy, setSortBy] = useState("newest");
+
+  const currentUser = JSON.parse(localStorage.getItem("user")); // 👈 get current user
 
   // Fetch notes from API
   useEffect(() => {
@@ -38,13 +40,35 @@ const NotesBrowsingPage = () => {
     fetchNotes();
   }, []);
 
-  // Format date function
+  const handleDelete = async (noteId) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this note?");
+    if (!confirmDelete) return;
+
+    try {
+      const res = await fetch(`/api/notes/${noteId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error("Delete failed");
+      }
+
+      setNotes((prevNotes) => prevNotes.filter((n) => n._id !== noteId));
+      alert("✅ Note deleted successfully");
+    } catch (err) {
+      console.error("❌ Delete failed:", err.message);
+      alert("Failed to delete note");
+    }
+  };
+
   const formatDate = (dateString) => {
     const options = { year: "numeric", month: "short", day: "numeric" };
     return new Date(dateString).toLocaleDateString("en-US", options);
   };
 
-  // Extract unique subjects from notes for the filter dropdown
   const extractSubjects = () => {
     const subjectsSet = new Set();
     notes.forEach((note) => {
@@ -57,13 +81,13 @@ const NotesBrowsingPage = () => {
 
   const subjects = extractSubjects();
 
-  // Filter and sort notes
   const filteredNotes = notes
     .filter((note) => {
       const matchesSearch =
         note.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (note.subject && note.subject.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (note.uploader && note.uploader.toLowerCase().includes(searchTerm.toLowerCase()));
+        (note.uploadedBy?.username &&
+          note.uploadedBy.username.toLowerCase().includes(searchTerm.toLowerCase()));
       const matchesSubject =
         selectedSubject === "All Subjects" || note.subject === selectedSubject;
       return matchesSearch && matchesSubject;
@@ -122,7 +146,6 @@ const NotesBrowsingPage = () => {
         Browse Notes
       </h1>
 
-     
       <div className="flex flex-wrap gap-4 bg-white p-4 rounded-xl mb-6 items-center shadow-sm">
         <div className="flex items-center gap-2 bg-slate-100 rounded-md px-3 py-2 flex-1">
           <FaSearch className="text-slate-400" />
@@ -159,21 +182,18 @@ const NotesBrowsingPage = () => {
         </select>
       </div>
 
-     
       <p className="text-slate-600 mb-4">
-        Showing {filteredNotes.length} {filteredNotes.length === 1 ? "note" : "notes"}
+        Showing {filteredNotes.length}{" "}
+        {filteredNotes.length === 1 ? "note" : "notes"}
         {selectedSubject !== "All Subjects" && ` in ${selectedSubject}`}
         {searchTerm && ` matching "${searchTerm}"`}
       </p>
 
-    
       {filteredNotes.length === 0 ? (
         <div className="bg-white rounded-xl p-8 text-center shadow-sm">
           <FaFilePdf className="mx-auto text-4xl text-gray-400 mb-3" />
           <h3 className="text-lg font-medium text-gray-700">No notes found</h3>
-          <p className="text-gray-500">
-            Try adjusting your search or filters
-          </p>
+          <p className="text-gray-500">Try adjusting your search or filters</p>
         </div>
       ) : (
         <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
@@ -182,7 +202,6 @@ const NotesBrowsingPage = () => {
               key={note._id}
               className="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-all duration-200 flex flex-col justify-between"
             >
-             
               <div className="flex justify-between text-sm text-slate-500 mb-2">
                 <span className="bg-blue-100 text-blue-600 px-2 py-1 rounded-md flex items-center gap-1 text-xs">
                   <FaBookOpen /> {note.subject || "Uncategorized"}
@@ -190,26 +209,22 @@ const NotesBrowsingPage = () => {
                 <span>{note.pageCount || "N/A"} pages</span>
               </div>
 
-           
               <h3 className="text-base font-semibold text-slate-800 mb-2">
                 {note.title}
               </h3>
 
-             
               <p className="text-sm text-slate-600 flex items-center gap-1 mb-1">
-                <FaUser /> {note.uploader || "Anonymous"}
+                <FaUser /> {note.uploadedBy?.username || "Anonymous"}
               </p>
               <p className="text-sm text-slate-600 flex items-center gap-1">
                 <FaCalendarAlt /> {formatDate(note.createdAt)}
               </p>
 
-            
               <div className="flex justify-between text-xs text-slate-400 mt-3">
                 <span>{note.downloadCount || 0} downloads</span>
                 <span>PDF</span>
               </div>
 
-              {/* Action buttons */}
               <div className="flex gap-2 mt-4">
                 <button className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md bg-white text-blue-600 hover:bg-blue-50 hover:text-blue-700 transition font-medium">
                   <FaEye />
@@ -218,9 +233,7 @@ const NotesBrowsingPage = () => {
 
                 <button
                   onClick={() => {
-                    // Handle download
                     window.open(note.fileUrl, "_blank");
-                    // You might want to track downloads by calling an API endpoint
                   }}
                   className="flex-1 px-3 py-2 rounded-md text-white font-medium transition-transform duration-200 hover:scale-105 shadow-md"
                   style={{
@@ -233,6 +246,16 @@ const NotesBrowsingPage = () => {
                   </div>
                 </button>
               </div>
+
+              {note?.uploadedBy?._id === currentUser?._id && (
+                <button
+                  onClick={() => handleDelete(note._id)}
+                  className="w-full mt-3 px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 transition text-sm flex items-center justify-center gap-2"
+                >
+                  <FaTrashAlt />
+                  Delete
+                </button>
+              )}
             </div>
           ))}
         </div>
