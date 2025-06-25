@@ -45,3 +45,26 @@ router.get('/notes', async (req, res) => {
 });
 
 module.exports = router;
+
+router.delete("/notes/:id", authMiddleware, async (req, res) => {
+  try {
+    const note = await Note.findById(req.params.id);
+
+    if (!note) {
+      return res.status(404).json({ message: "Note not found" });
+    }
+
+    // Check ownership
+    if (note.uploadedBy.toString() !== req.user.userId) {
+      return res
+        .status(403)
+        .json({ message: "You are not authorized to delete this note" });
+    }
+
+    await note.deleteOne();
+    res.status(200).json({ message: "Note deleted successfully" });
+  } catch (err) {
+    console.error("❌ Delete error:", err.message);
+    res.status(500).json({ message: "Server error" });
+  }
+});
