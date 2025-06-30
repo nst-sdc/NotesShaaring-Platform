@@ -6,6 +6,7 @@ import SignUp from './components/SignUp';
 import NotesUploadPage from './components/NotesUploadPage';
 import NotesBrowsingPage from './components/NotesBrowsingPage';
 import NotesPage from "./pages/NotesPage"; 
+import Dashboard from './pages/Dashboard';
 import AuthSuccess from './components/AuthSuccess'; 
 import PrivateRoute from './components/PrivateRoute';
 import NoteDetailsPage from './pages/NoteDetailsPage';
@@ -18,6 +19,14 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
+          <Route 
+          path="/dashboard" 
+          element={
+            <PrivateRoute>
+              <Dashboard />
+            </PrivateRoute>
+          }
+        />
         <Route 
           path="/notes" 
           element={

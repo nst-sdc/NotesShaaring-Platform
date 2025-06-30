@@ -61,13 +61,16 @@ const Navbar = () => {
           </>
         )}
         {isLoggedIn && (
-          <span
-            className="nav-link"
-            style={{ cursor: 'pointer' }}
-            onClick={handleLogout}
-          >
-            Logout
-          </span>
+          <>
+            <Link to="/dashboard" className="nav-link">Dashboard</Link>
+            <span
+              className="nav-link"
+              style={{ cursor: 'pointer' }}
+              onClick={handleLogout}
+            >
+              Logout
+            </span>
+          </>
         )}
       </div>
     </nav>
