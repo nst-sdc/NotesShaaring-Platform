@@ -116,7 +116,7 @@ export default function Dashboard() {
       <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 px-6 py-10 font-sans text-gray-800 flex items-center justify-center">
         <div className="text-center max-w-md">
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg">
-            <h3 className="font-bold mb-2">Error Loading Dashboard</h3>
+            <h3 className="font-bold mb-2">Error Loading Dashboard ...</h3>
             <p className="text-sm">{error}</p>
             <button 
               onClick={() => window.location.reload()} 
