@@ -6,7 +6,6 @@ import SignUp from './components/SignUp';
 import NotesUploadPage from './components/NotesUploadPage';
 import NotesBrowsingPage from './components/NotesBrowsingPage';
 import NotesPage from "./pages/NotesPage"; 
-import DoubtsPage from './pages/DoubtsPage';
 import Dashboard from './pages/Dashboard';
 import AuthSuccess from './components/AuthSuccess'; 
 import PrivateRoute from './components/PrivateRoute';
@@ -62,14 +61,6 @@ function App() {
             </PrivateRoute>
           } 
         />
-          <Route 
-            path="/doubts" 
-            element={
-              <PrivateRoute>
-                <DoubtsPage />
-              </PrivateRoute>
-            } 
-          />
         <Route path="/auth/success" element={<AuthSuccess />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
       </Routes>

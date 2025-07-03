@@ -28,6 +28,7 @@ const Navbar = () => {
   const handleLogout = () => {
     localStorage.removeItem('token');
     setIsLoggedIn(false);
+    // Notify other listeners
     window.dispatchEvent(new Event('authChange'));
     navigate('/');
   };
@@ -53,10 +54,14 @@ const Navbar = () => {
         >
           Notes
         </span>
-
+        {!isLoggedIn && (
+          <>
+            <Link to="/login" className="nav-link">Login</Link>
+            <Link to="/signup" className="nav-link">Sign Up</Link>
+          </>
+        )}
         {isLoggedIn && (
           <>
-            <Link to="/doubts" className="nav-link">Doubts</Link>
             <Link to="/dashboard" className="nav-link">Dashboard</Link>
             <span
               className="nav-link"
@@ -65,13 +70,6 @@ const Navbar = () => {
             >
               Logout
             </span>
-          </>
-        )}
-
-        {!isLoggedIn && (
-          <>
-            <Link to="/login" className="nav-link">Login</Link>
-            <Link to="/signup" className="nav-link">Sign Up</Link>
           </>
         )}
       </div>
