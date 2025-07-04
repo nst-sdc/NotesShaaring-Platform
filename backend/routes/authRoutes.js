@@ -101,7 +101,7 @@ router.get('/google/callback',
     const token = jwt.sign({ userId: req.user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
     if (state === 'signup') {
-      return res.redirect(`${redirectUrl}/login?signup=${req.user._alreadyExists ? 'exists' : 'success'}`);
+      return res.redirect(`${redirectUrl}/login`);
     } else {
       return res.redirect(`${redirectUrl}/auth/success?token=${token}`);
     }

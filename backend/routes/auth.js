@@ -97,13 +97,20 @@ router.get('/google/callback',
       : 'http://localhost:5173/login'
   }),
   async (req, res) => {
+    const state = req.query.state;
     const redirectUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     const token = jwt.sign(
       { userId: req.user._id },
       process.env.JWT_SECRET,
       { expiresIn: '1h' }
     );
-    return res.redirect(`${redirectUrl}/auth/success?token=${token}`);
+    if (state === 'signup') {
+      // After signup, go to login page
+      return res.redirect(`${redirectUrl}/login`);
+    } else {
+      // After login, go to home/dashboard
+      return res.redirect(`${redirectUrl}/auth/success?token=${token}`);
+    }
   }
 );
 
