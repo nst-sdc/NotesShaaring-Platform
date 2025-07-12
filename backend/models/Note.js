@@ -52,6 +52,15 @@ const noteSchema = new mongoose.Schema({
     type: String,
     enum: ["Basic", "Intermediate", "Advanced"],
     default: "Basic"
+  },
+  validationStatus: {
+    type: String,
+    enum: ["pending", "validated", "rejected"],
+    default: "pending"
+  },
+  validationFeedback: {
+    type: [String],
+    default: []
   }
 }, {
   timestamps: true
