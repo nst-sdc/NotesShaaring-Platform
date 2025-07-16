@@ -101,14 +101,25 @@ router.get("/", async (req, res) => {
       { $group: { _id: "$note", count: { $sum: 1 } } },
     ]);
 
+    // Aggregate average ratings
+    const reviewAverages = await Review.aggregate([
+      { $group: { _id: "$note", avgRating: { $avg: "$rating" } } },
+    ]);
+
     const reviewCountMap = {};
     reviewCounts.forEach((rc) => {
       reviewCountMap[rc._id.toString()] = rc.count;
     });
 
+    const reviewAvgMap = {};
+    reviewAverages.forEach((ra) => {
+      reviewAvgMap[ra._id.toString()] = ra.avgRating;
+    });
+
     const notesWithExtras = notes.map((note) => {
       const n = note.toObject();
       n.reviewCount = reviewCountMap[n._id.toString()] || 0;
+      n.averageRating = reviewAvgMap[n._id.toString()] || 0;
       n.likes = note.likedBy?.length || 0;
       return n;
     });
@@ -146,13 +157,23 @@ router.get("/:id", async (req, res) => {
       "username email"
     );
     if (!note) return res.status(404).json({ message: "Note not found" });
-    res.status(200).json({ note });
-  } catch (error) {
-  console.error('🔥 FULL ERROR:', error);
-  console.error('🔥 STACK TRACE:', error.stack);
-  res.status(500).json({ error: error.message || 'Internal Server Error' });
-}
 
+    // Aggregate review count and average rating for this note
+    const [reviewStats] = await Review.aggregate([
+      { $match: { note: note._id } },
+      { $group: { _id: "$note", count: { $sum: 1 }, avgRating: { $avg: "$rating" } } }
+    ]);
+
+    const noteObj = note.toObject();
+    noteObj.reviewCount = reviewStats ? reviewStats.count : 0;
+    noteObj.averageRating = reviewStats ? reviewStats.avgRating : 0;
+
+    res.status(200).json({ note: noteObj });
+  } catch (error) {
+    console.error('🔥 FULL ERROR:', error);
+    console.error('🔥 STACK TRACE:', error.stack);
+    res.status(500).json({ error: error.message || 'Internal Server Error' });
+  }
 });
 
 

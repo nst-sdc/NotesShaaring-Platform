@@ -153,9 +153,9 @@ const fetchReviews = React.useCallback(async () => {
                 <div className="flex space-x-2">
                   <button
                     onClick={() => setEditing(currentUserReview)}
-                    className="text-primary hover:text-primary/80 transition-colors flex items-center space-x-1"
+                    className="bg-white border border-green-600 text-green-700 font-semibold px-3 py-1 rounded hover:bg-green-600 hover:text-white transition-colors flex items-center space-x-1 shadow"
                   >
-                    <Edit className="w-3 h-3" />
+                    <Edit className="w-4 h-4" />
                     <span>Edit</span>
                   </button>
                   <button
