@@ -9,6 +9,7 @@ const fs = require("fs");
 const { estimateDifficulty } = require("../utils/difficultyEstimator");
 const youtubeApi = require('../utils/youtubeApi');
 const googleSearchApi = require('../utils/googleSearchApi');
+const pdfParse = require('pdf-parse');
 
 
 router.post("/", protect, upload.single("file"), async (req, res) => {
@@ -36,7 +37,6 @@ router.post("/", protect, upload.single("file"), async (req, res) => {
     }
     finalDifficulty = mapDifficulty(finalDifficulty);
 
-
     let summary = "";
     // Summary feature is currently disabled. Uncomment below to enable in the future.
     // try {
@@ -47,6 +47,18 @@ router.post("/", protect, upload.single("file"), async (req, res) => {
     // }
     summary = "Summary feature is currently disabled";
 
+    // Extract content from PDF if applicable
+    let content = '';
+    if (req.file.mimetype === 'application/pdf') {
+      try {
+        const dataBuffer = req.file.buffer ? req.file.buffer : require('fs').readFileSync(req.file.path);
+        const pdfData = await pdfParse(dataBuffer);
+        content = pdfData.text || '';
+      } catch (err) {
+        console.error('Error extracting PDF text:', err);
+        content = '';
+      }
+    }
 
     const newNote = new Note({
       title,
@@ -60,6 +72,7 @@ router.post("/", protect, upload.single("file"), async (req, res) => {
       difficulty: finalDifficulty,
       summary,
       status: 'pending', // Explicitly set status to pending
+      content,
     });
 
     await newNote.save();

@@ -18,6 +18,10 @@ const noteSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
+  content: {
+    type: String,
+    trim: true
+  },
   fileUrl: {
     type: String,
     required: true,

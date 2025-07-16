@@ -5,9 +5,9 @@ const GOOGLE_CUSTOM_SEARCH_ENGINE_ID = process.env.GOOGLE_CUSTOM_SEARCH_ENGINE_I
 const GOOGLE_SEARCH_API_BASE_URL = 'https://www.googleapis.com/customsearch/v1';
 
 
-function extractArticleKeywords(title = '', description = '', subject = '', summary = '') {
+function extractArticleKeywords(title = '', description = '', subject = '', summary = '', content = '') {
 
-  const text = `${title} ${description} ${subject} ${summary}`.toLowerCase();
+  const text = `${title} ${description} ${subject} ${summary} ${content}`.toLowerCase();
 
 
   const stopWords = new Set([
@@ -49,7 +49,7 @@ async function fetchRelatedArticles(keywords, maxResults = 8) {
   
   try {
     
-    const query = 'artificial intelligence';
+    const query = (keywords && keywords.length > 0) ? keywords.join(' ') : 'educational article';
     
     const response = await axios.get(GOOGLE_SEARCH_API_BASE_URL, {
       params: {
@@ -102,7 +102,8 @@ function formatArticleDate(dateString) {
 async function getRelatedArticles(note) {
 
   const summary = note.summary || '';
-  const keywords = extractArticleKeywords(note.title, note.description, note.subject, summary);
+  const content = note.content || '';
+  const keywords = extractArticleKeywords(note.title, note.description, note.subject, summary, content);
   const articles = await fetchRelatedArticles(keywords);
 
   return {

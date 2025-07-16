@@ -5,8 +5,8 @@ const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
 const YOUTUBE_API_BASE_URL = 'https://www.googleapis.com/youtube/v3';
 
 
-function extractKeywords(title = '', description = '', subject = '') {
-  const text = `${title} ${description} ${subject}`.toLowerCase();
+function extractKeywords(title = '', description = '', subject = '', content = '') {
+  const text = `${title} ${description} ${subject} ${content}`.toLowerCase();
 
   const educationalKeywords = [
     'tutorial', 'lecture', 'course', 'lesson', 'explanation', 'guide',
@@ -147,7 +147,8 @@ function formatDuration(duration) {
 
 
 async function getRelatedVideos(note) {
-  const keywords = extractKeywords(note.title, note.description, note.subject);
+  const content = note.content || '';
+  const keywords = extractKeywords(note.title, note.description, note.subject, content);
   const videos = await fetchRelatedVideos(keywords);
   
   return {
