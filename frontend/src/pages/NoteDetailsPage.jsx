@@ -577,9 +577,13 @@ const NoteDetailsPage = () => {
             </div>
           </form>
         </ReactModal>
-    {showViewer && (
-   <BookModeViewer fileUrl={pdfBlobUrl} onClose={() => setShowViewer(false)} />
-
+ {showViewer && currentUser && note && pdfBlobUrl && (
+  <BookModeViewer
+    fileUrl={pdfBlobUrl}
+    userId={currentUser._id || currentUser.userId}
+    noteId={note._id}
+    onClose={() => setShowViewer(false)}
+  />
 )}
 
       </div>
