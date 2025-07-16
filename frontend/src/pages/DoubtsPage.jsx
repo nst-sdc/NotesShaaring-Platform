@@ -128,8 +128,8 @@ export default function DoubtsPage() {
         body: JSON.stringify(formData)
       });
       if (response.ok) {
-        const newDoubt = await response.json();
-        setDoubts(prev => [newDoubt, ...prev]);
+        const data = await response.json();
+        setDoubts(prev => [data.doubt, ...prev]);
         setFormData({ title: '', description: '', subject: '' });
         setShowForm(false);
       } else {
@@ -161,7 +161,7 @@ export default function DoubtsPage() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify(answerData[doubtId])
+        body: JSON.stringify({ text: answerData[doubtId] })
       });
 
       if (response.ok) {
@@ -200,9 +200,9 @@ export default function DoubtsPage() {
       });
 
       if (response.ok) {
-        const updatedDoubt = await response.json();
+        const data = await response.json();
         setDoubts(doubts.map(doubt => 
-          doubt._id === doubtId ? updatedDoubt : doubt
+          doubt._id === doubtId ? data.doubt : doubt
         ));
         setEditingDoubt(null);
       } else {
@@ -232,7 +232,8 @@ export default function DoubtsPage() {
       });
 
       if (response.ok) {
-        const updatedAnswer = await response.json();
+        const data = await response.json();
+        const updatedAnswer = data.answer;
         setDoubts(doubts.map(doubt => 
           doubt._id === doubtId 
             ? { 
@@ -245,7 +246,8 @@ export default function DoubtsPage() {
         ));
         setEditingAnswer(null);
       } else {
-        alert('Failed to update answer');
+        const errorData = await response.json();
+        alert(errorData.message || 'Failed to update answer');
       }
     } catch (error) {
       console.error('Error updating answer:', error);
@@ -332,7 +334,12 @@ export default function DoubtsPage() {
     return new Date(updatedAt).getTime() > new Date(createdAt).getTime();
   };
 
-  const isDoubtOwner = (doubt) => currentUser && doubt.userId?.toString() === (currentUser.userId || currentUser._id)?.toString();
+  const isDoubtOwner = (doubt) => {
+    if (!currentUser || !doubt.userId) return false;
+    const doubtUserId = typeof doubt.userId === 'object' ? doubt.userId._id : doubt.userId;
+    const currentId = currentUser.userId || currentUser._id;
+    return doubtUserId?.toString() === currentId?.toString();
+  };
   const isAnswerOwner = (answer) => currentUser && (answer.author?._id || answer.author)?.toString() === (currentUser.userId || currentUser._id)?.toString();
 
   if (loading) {
@@ -469,12 +476,14 @@ export default function DoubtsPage() {
                       <button
                         onClick={() => setEditingDoubt(doubt)}
                         className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-all duration-200 hover-scale"
+                        title="Edit Doubt"
                       >
                         <Edit className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDeleteDoubt(doubt._id)}
                         className="p-2 text-destructive hover:bg-destructive/10 rounded-lg transition-all duration-200 hover-scale"
+                        title="Delete Doubt"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
