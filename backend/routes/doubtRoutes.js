@@ -9,6 +9,7 @@ router.get("/", async (req, res) => {
   try {
     const doubts = await Doubt.find()
       .populate("userId", "username name email")
+      .populate("answers.author", "username name email")
       .sort({ timestamp: -1 });
     res.json({ doubts });
   } catch (err) {
