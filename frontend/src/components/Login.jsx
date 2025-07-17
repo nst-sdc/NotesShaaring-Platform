@@ -36,8 +36,19 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [longWait, setLongWait] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+
+  React.useEffect(() => {
+    let timer;
+    if (isLoading) {
+      timer = setTimeout(() => setLongWait(true), 5000);
+    } else {
+      setLongWait(false);
+    }
+    return () => clearTimeout(timer);
+  }, [isLoading]);
 
   const handleChange = (e) => {
     setFormData({
@@ -194,7 +205,12 @@ export default function Login() {
               className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-primary hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 hover-scale btn-animated disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? (
-                <div className="loading"></div>
+                <>
+                  <div className="loading"></div>
+                  <span className="ml-2">
+                    {longWait ? 'Waking up the server, please wait...' : 'Signing in...'}
+                  </span>
+                </>
               ) : (
                 <>
                   Sign in

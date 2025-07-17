@@ -30,10 +30,13 @@ export default function Dashboard() {
   const [error, setError] = useState('');
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [favorites, setFavorites] = useState([]);
+  const [longWait, setLongWait] = useState(false);
 
   useEffect(() => {
+    const timer = setTimeout(() => setLongWait(true), 5000); // 5 seconds
     fetchDashboardData();
     fetchFavorites();
+    return () => clearTimeout(timer);
   }, []);
 
   const fetchDashboardData = async () => {
@@ -98,7 +101,9 @@ export default function Dashboard() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center animate-fade-in">
           <div className="loading mx-auto mb-4"></div>
-          <p className="text-muted-foreground font-medium">Loading dashboard...</p>
+          <p className="text-muted-foreground font-medium">
+            {longWait ? 'Waking up the server, please wait...' : 'Loading dashboard...'}
+          </p>
         </div>
       </div>
     );
