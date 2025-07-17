@@ -19,6 +19,7 @@ import Footer from './components/Footer';
 import Privacy from './pages/Privacy';
 import Contact from './pages/Contact';
 import AdminLogin from './components/AdminLogin';
+import AuthError from './components/AuthError';
 
 function App() {
   return (
@@ -40,6 +41,7 @@ function App() {
               <Route path="/doubts" element={<PrivateRoute><DoubtsPage /></PrivateRoute>} />
               <Route path="/doubts/:id" element={<PrivateRoute><DoubtDetailPage /></PrivateRoute>} />
               <Route path="/auth/success" element={<AuthSuccess />} />
+              <Route path="/auth-error" element={<AuthError />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/admin" element={<AdminLogin />} />
