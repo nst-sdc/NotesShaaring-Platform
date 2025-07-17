@@ -501,7 +501,7 @@ export default function DoubtsPage() {
                       <div className="flex justify-between items-start mb-3">
                         <div className="flex items-center space-x-2">
                           <User className="w-4 h-4 text-muted-foreground" />
-                          <span className="font-medium text-foreground">{answer.author?.username || 'Anonymous'}</span>
+                          <span className="font-medium text-foreground">{answer.author?.username || answer.author?.name || answer.author?.email || 'Anonymous'}</span>
                           <div className="flex items-center space-x-1 text-xs text-foreground">
                             <Calendar className="w-3 h-3" />
                             <span>{formatDate(answer.time)}</span>
