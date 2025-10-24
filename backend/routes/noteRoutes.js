@@ -89,49 +89,43 @@ router.post("/", protect, upload.single("file"), async (req, res) => {
 
 });
 
-
-router.get("/", async (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    const notes = await Note.find()
-      .sort({ createdAt: -1 })
-      .populate("uploadedBy", "username email")
-      .populate("downloadedBy", "_id");
+    const { page = 1, limit = 8, search = '', subject, sortBy, difficulty } = req.query;
 
-    const reviewCounts = await Review.aggregate([
-      { $group: { _id: "$note", count: { $sum: 1 } } },
-    ]);
+    const query = {};
+    if (search) query.title = { $regex: search, $options: 'i' };
+    if (subject && subject !== 'All Subjects') query.subject = subject;
+    if (difficulty && difficulty !== 'All') query.difficulty = difficulty;
 
-    // Aggregate average ratings
-    const reviewAverages = await Review.aggregate([
-      { $group: { _id: "$note", avgRating: { $avg: "$rating" } } },
-    ]);
+    let sort = { createdAt: -1 };
+    if (sortBy === 'oldest') sort = { createdAt: 1 };
+    if (sortBy === 'downloads') sort = { downloads: -1 };
+    if (sortBy === 'likes') sort = { likes: -1 };
+    if (sortBy === 'title') sort = { title: 1 };
 
-    const reviewCountMap = {};
-    reviewCounts.forEach((rc) => {
-      reviewCountMap[rc._id.toString()] = rc.count;
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const totalCount = await Note.countDocuments(query);
+    const notes = await Note.find(query)
+      .sort(sort)
+      .skip(skip)
+      .limit(parseInt(limit))
+      .populate('uploadedBy', 'username');
+
+    res.json({
+      notes,
+      totalCount,
+      totalPages: Math.ceil(totalCount / limit),
+      currentPage: parseInt(page),
     });
-
-    const reviewAvgMap = {};
-    reviewAverages.forEach((ra) => {
-      reviewAvgMap[ra._id.toString()] = ra.avgRating;
-    });
-
-    const notesWithExtras = notes.map((note) => {
-      const n = note.toObject();
-      n.reviewCount = reviewCountMap[n._id.toString()] || 0;
-      n.averageRating = reviewAvgMap[n._id.toString()] || 0;
-      n.likes = note.likedBy?.length || 0;
-      return n;
-    });
-
-    res.status(200).json({ notes: notesWithExtras });
-  } catch (error) {
-  console.error('🔥 FULL ERROR:', error);
-  console.error('🔥 STACK TRACE:', error.stack);
-  res.status(500).json({ error: error.message || 'Internal Server Error' });
-}
-
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
 });
+
+
+
 
 router.get("/favorites", protect, async (req, res) => {
   try {
@@ -147,6 +141,53 @@ router.get("/favorites", protect, async (req, res) => {
   res.status(500).json({ error: error.message || 'Internal Server Error' });
 }
 
+});
+
+// List all notes (admin view)
+router.get('/admin/all', async (req, res) => {
+  if (!isAdmin(req)) return res.status(401).json({ message: 'Unauthorized' });
+  try {
+    const notes = await Note.find().sort({ createdAt: -1 });
+    res.json({ notes });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Approve a note
+router.post('/admin/:id/approve', async (req, res) => {
+  if (!isAdmin(req)) return res.status(401).json({ message: 'Unauthorized' });
+  try {
+    const note = await Note.findByIdAndUpdate(req.params.id, { status: 'approved' }, { new: true });
+    if (!note) return res.status(404).json({ message: 'Note not found' });
+    res.json({ message: 'Note approved', note });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Reject a note
+router.post('/admin/:id/reject', async (req, res) => {
+  if (!isAdmin(req)) return res.status(401).json({ message: 'Unauthorized' });
+  try {
+    const note = await Note.findByIdAndUpdate(req.params.id, { status: 'rejected' }, { new: true });
+    if (!note) return res.status(404).json({ message: 'Note not found' });
+    res.json({ message: 'Note rejected', note });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Delete a note (admin)
+router.delete('/admin/:id', async (req, res) => {
+  if (!isAdmin(req)) return res.status(401).json({ message: 'Unauthorized' });
+  try {
+    const note = await Note.findByIdAndDelete(req.params.id);
+    if (!note) return res.status(404).json({ message: 'Note not found' });
+    res.json({ message: 'Note deleted' });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
 });
 
 
@@ -401,52 +442,7 @@ function isAdmin(req) {
   return !!token; // In production, verify token properly
 }
 
-// List all notes (admin view)
-router.get('/admin/all', async (req, res) => {
-  if (!isAdmin(req)) return res.status(401).json({ message: 'Unauthorized' });
-  try {
-    const notes = await Note.find().sort({ createdAt: -1 });
-    res.json({ notes });
-  } catch (err) {
-    res.status(500).json({ message: 'Server error' });
-  }
-});
 
-// Approve a note
-router.post('/admin/:id/approve', async (req, res) => {
-  if (!isAdmin(req)) return res.status(401).json({ message: 'Unauthorized' });
-  try {
-    const note = await Note.findByIdAndUpdate(req.params.id, { status: 'approved' }, { new: true });
-    if (!note) return res.status(404).json({ message: 'Note not found' });
-    res.json({ message: 'Note approved', note });
-  } catch (err) {
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// Reject a note
-router.post('/admin/:id/reject', async (req, res) => {
-  if (!isAdmin(req)) return res.status(401).json({ message: 'Unauthorized' });
-  try {
-    const note = await Note.findByIdAndUpdate(req.params.id, { status: 'rejected' }, { new: true });
-    if (!note) return res.status(404).json({ message: 'Note not found' });
-    res.json({ message: 'Note rejected', note });
-  } catch (err) {
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// Delete a note (admin)
-router.delete('/admin/:id', async (req, res) => {
-  if (!isAdmin(req)) return res.status(401).json({ message: 'Unauthorized' });
-  try {
-    const note = await Note.findByIdAndDelete(req.params.id);
-    if (!note) return res.status(404).json({ message: 'Note not found' });
-    res.json({ message: 'Note deleted' });
-  } catch (err) {
-    res.status(500).json({ message: 'Server error' });
-  }
-});
 
 module.exports = router;
 
