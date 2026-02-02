@@ -82,66 +82,32 @@ const NotesBrowsingPage = () => {
   const [selectedDifficulty, setSelectedDifficulty] = useState('');
   const NOTES_PER_PAGE = 8; 
 
+const fetchNotes = useCallback(async () => {
+  try {
+    setLoading(true);
+    setError('');
 
-  const fetchNotes = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError('');
+    const params = {
+      page: currentPage,
+      limit: NOTES_PER_PAGE,
+      search: searchTerm || undefined,
+      subject: selectedSubject !== 'All Subjects' ? selectedSubject : undefined,
+      difficulty: selectedDifficulty || undefined,
+      sortBy
+    };
 
-      const response = await axios.get(`${API_BASE_URL}/notes`);
-      const allNotesFetched = response.data.notes || [];
-      setAllNotes(allNotesFetched);
-      
-     
-      let filteredNotes = allNotesFetched;
-      if (searchTerm) {
-        filteredNotes = filteredNotes.filter(note => 
-          note.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          note.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          note.subject.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-      }
-      if (selectedSubject !== 'All Subjects') {
-        filteredNotes = filteredNotes.filter(note => 
-          note.subject === selectedSubject
-        );
-      }
-      if (sortBy === 'difficulty' && selectedDifficulty) {
-        filteredNotes = filteredNotes.filter(note => note.difficulty === selectedDifficulty);
-      }
-      
-      filteredNotes.sort((a, b) => {
-        switch (sortBy) {
-          case 'newest':
-            return new Date(b.createdAt) - new Date(a.createdAt);
-          case 'oldest':
-            return new Date(a.createdAt) - new Date(b.createdAt);
-          case 'downloads':
-            return (b.downloadCount || 0) - (a.downloadCount || 0);
-          case 'likes':
-            return (b.likes || 0) - (a.likes || 0);
-          case 'reviewed':
-            return (b.reviewCount || 0) - (a.reviewCount || 0);
-          case 'title':
-            return a.title.localeCompare(b.title);
-          default:
-            return 0;
-        }
-      });
-      
-      const total = filteredNotes.length;
-setTotalPages(Math.ceil(total / NOTES_PER_PAGE));
-const startIndex = (currentPage - 1) * NOTES_PER_PAGE;
-const paginatedNotes = filteredNotes.slice(startIndex, startIndex + NOTES_PER_PAGE);
-setNotes(paginatedNotes);
+    const { data } = await axios.get(`${API_BASE_URL}/notes`, { params });
 
-    } catch (error) {
-      console.error('Error fetching notes:', error);
-      setError('Failed to load notes. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  }, [searchTerm, selectedSubject, sortBy, selectedDifficulty, currentPage]);
+    setNotes(data.notes || []);
+    setTotalPages(data.totalPages || Math.ceil((data.totalCount || 0) / NOTES_PER_PAGE));
+  } catch (err) {
+    console.error('Error fetching notes:', err);
+    setError('Failed to load notes. Please try again.');
+  } finally {
+    setLoading(false);
+  }
+}, [currentPage, searchTerm, selectedSubject, selectedDifficulty, sortBy]);
+
 
 
   const fetchCurrentUser = useCallback(async () => {
@@ -412,7 +378,7 @@ setNotes(paginatedNotes);
         </div>
 
         <p className="mb-6 text-muted-foreground text-sm animate-slide-up" style={{ animationDelay: '200ms' }}>
-          Showing {notes.length} of {allNotes.length} notes
+          Page {currentPage} of {totalPages} — showing {notes.length} notes per page
         </p>
 
         {notes.length === 0 ? (
